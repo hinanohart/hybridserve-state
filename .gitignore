@@ -1,7 +1,8 @@
 # Rust
 /target
 **/target
-Cargo.lock
+# Cargo.lock is committed: this workspace ships a CLI + PyO3 extension, and the
+# bitwise rehydration-equivalence claim benefits from pinned, reproducible deps.
 
 # Python
 .venv/

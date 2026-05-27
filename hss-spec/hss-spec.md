@@ -119,7 +119,12 @@ which the adversarial negative test deliberately attacks:
 * **`seen_tokens`** — A `recurrent_state` is a *lossy fold* of exactly this many
   tokens. Two states folded over different token counts are **not**
   concatenable; a reader that resumes MUST treat `seen_tokens` as part of the
-  state's identity.
+  state's identity. (Note: whether a *numeric* divergence results from a wrong
+  `seen_tokens` depends on whether the model's recurrence reads it. The v0.1
+  CPU reference model does not, so the reference adversarial suite exercises
+  `conv_phase`, the recurrent fold, and attention-KV length rather than
+  `seen_tokens` directly; `seen_tokens` remains identity metadata that a
+  concatenating reader must honor.)
 * **`layers.{i}.conv_phase`** — A `conv_state` is a ring buffer of the last
   `kernel_size - 1` inputs. `conv_phase` is the write position (0-based) within
   that ring. Resuming with the wrong phase rotates the buffer and corrupts the
@@ -132,6 +137,13 @@ which the adversarial negative test deliberately attacks:
 A reader MUST reject (or refuse to claim equivalence for) a state whose
 `layers.{i}.role` is not a known ROLE, or whose `seen_tokens` / `n_layers` /
 `conv_phase` / `chunk_boundary` are not non-negative integers.
+
+The **decode position** (which token to feed next to resume sampling) is the
+consuming engine's responsibility and is **not** part of `.hss` container
+semantics — `.hss` stores model *state*, not the sampler cursor. An engine that
+needs to resume *generation* (rather than just rehydrate state) must persist
+that cursor itself; the reference harness does so under a private
+`next_input` metadata key purely as an implementation detail of its decode loop.
 
 ## 5. The rehydration-equivalence contract
 

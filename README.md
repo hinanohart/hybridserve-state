@@ -124,8 +124,9 @@ information the guarantee depends on, and the guarantee is not vacuously true.
   to/from `.hss` and is unit-tested against that documented schema using
   synthetic Cache objects; **end-to-end resume on a real `fla` model is not part
   of this release.**
-* vLLM / SGLang adapters live in `python/hybridserve_state/_experimental/`, are
-  **excluded from CI**, and are deferred to v0.1.1.
+* vLLM / SGLang adapters are **deferred to v0.1.1 and are not part of this
+  release**. The `python/hybridserve_state/_experimental/` package is reserved
+  for them and is excluded from CI; it ships empty in v0.1.0a1.
 * Bitwise equivalence is asserted only on **CPU-deterministic** kernels.
   Non-deterministic GPU kernels are out of scope; equivalence there would be a
   tolerance-based claim, which this release does not make.
