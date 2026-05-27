@@ -1,0 +1,44 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "hybridserve-state"
+version = "0.1.0a1"
+description = "Engine-agnostic on-disk interchange for hybrid SSM+Attention LLM inference state, with a machine-checked rehydration-equivalence contract."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "hinanohart" }]
+keywords = [
+    "ssm",
+    "mamba",
+    "linear-attention",
+    "hybrid",
+    "inference",
+    "kv-cache",
+    "serialization",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["numpy>=1.23"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.urls]
+Repository = "https://github.com/hinanohart/hybridserve-state"
+
+[project.scripts]
+hss = "hybridserve_state.cli:main"
+
+[tool.maturin]
+manifest-path = "bindings/Cargo.toml"
+module-name = "hybridserve_state._core"
+python-source = "python"

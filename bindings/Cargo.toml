@@ -1,0 +1,15 @@
+[package]
+name = "hybridserve_state_rs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "PyO3 bindings exposing the hybridserve_state_core .hss container reader/writer to Python."
+
+[lib]
+name = "hybridserve_state_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.28", features = ["extension-module"] }
+hybridserve_state_core = { path = "../core" }

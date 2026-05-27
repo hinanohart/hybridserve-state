@@ -1,0 +1,23 @@
+# Rust
+/target
+**/target
+Cargo.lock
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.so
+.pytest_cache/
+.ruff_cache/
+
+# Build / test artifacts
+*.hss
+*.npz
+
+# Autonomous-build local state (not part of the project)
+.hybridserve-state-progress.json
+experiments/_wip/
