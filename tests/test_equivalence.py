@@ -14,13 +14,18 @@ import pytest
 from hybridserve_state import verify
 from hybridserve_state.reference import ModelConfig
 
-# Two architectures, including one hybrid (recurrent + attention interleaved).
+# Three architectures: one hybrid (recurrent + attention interleaved) plus the
+# two pure stacks, so each carried-state kind (recurrent fold + conv ring, and
+# the growing attention KV cache) is also exercised in isolation.
 HYBRID = ("recurrent", "attn", "recurrent")
 PURE_RECURRENT = ("recurrent", "recurrent")
+PURE_ATTN = ("attn", "attn")
 
 
 @pytest.mark.parametrize(
-    "layer_types", [HYBRID, PURE_RECURRENT], ids=["hybrid", "pure_recurrent"]
+    "layer_types",
+    [HYBRID, PURE_RECURRENT, PURE_ATTN],
+    ids=["hybrid", "pure_recurrent", "pure_attn"],
 )
 @pytest.mark.parametrize("seed", [0, 1, 7])
 def test_positive_equivalence_is_bitwise_cross_process(tmp_path, layer_types, seed):

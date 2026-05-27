@@ -32,7 +32,14 @@ __all__ = ["save", "load", "inspect_file", "supported_dtypes", "__hss_version__"
 
 
 def supported_dtypes() -> tuple[str, ...]:
-    """NumPy dtype names this layer can serialize."""
+    """NumPy dtype names this layer can serialize.
+
+    The container format (``hss-spec`` §3) also defines ``BF16`` as a valid
+    2-byte opaque dtype, but NumPy has no native ``bfloat16``, so this NumPy I/O
+    layer neither produces nor consumes it; a ``bfloat16`` array must be carried
+    as raw bytes through the Rust core directly. An unsupported dtype passed to
+    :func:`save` raises ``ValueError`` rather than being silently mislabeled.
+    """
     return tuple(_NP_TO_HSS)
 
 

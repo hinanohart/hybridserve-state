@@ -39,13 +39,16 @@ and conv parts of a hybrid model. That gap is what this project fills.
 ## Install
 
 ```bash
+python -m venv .venv && . .venv/bin/activate   # or your preferred env
 pip install maturin numpy
 maturin develop --release      # builds the Rust core into the Python package
 ```
 
-Requires a stable Rust toolchain and Python ≥ 3.10. NumPy is the only runtime
-dependency. PyTorch / `flash-linear-attention` are **optional** and only used by
-the (CI-skipped) real-engine adapters.
+Run the build from inside the activated environment (the same flow CI uses); if
+`maturin` is not found on `PATH`, invoke it as `python -m maturin develop
+--release`. Requires a stable Rust toolchain and Python ≥ 3.10. NumPy is the only
+runtime dependency. PyTorch / `flash-linear-attention` are **optional** and only
+used by the (CI-skipped) real-engine adapters.
 
 ## Quickstart
 
@@ -96,10 +99,14 @@ The self-check (`hss selfcheck`, and `tests/`):
 3. asserts the two continuations are **bitwise identical** (ε = 0, a committed
    constant — never widened).
 
-A separate **adversarial negative test** corrupts the rehydrated state (wrong
-conv-phase, mismatched `seen_tokens`, truncated recurrent fold) and asserts the
-resumed continuation **diverges** — i.e. the format actually carries the
-information the guarantee depends on, and the guarantee is not vacuously true.
+A separate **adversarial negative test** corrupts the rehydrated state — it
+rotates a conv-phase, zeroes a recurrent fold, and drops the most recent
+attention-KV row — and asserts the resumed continuation **diverges** in each
+case, i.e. the format actually carries the information the guarantee depends on,
+and the guarantee is not vacuously true. (`seen_tokens` is *identity* metadata
+the spec requires a concatenating reader to honor, but the reference recurrence
+does not read it, so it is not one of the exercised corruptions — see
+`hss-spec/hss-spec.md` §4.3.)
 
 ## CLAIM / NON-CLAIM
 
@@ -138,8 +145,8 @@ is deliberately narrow and does **not** claim to be the first to put inference
 state on disk:
 
 * **vLLM / SGLang** hybrid-state support is **in-memory** and engine-internal.
-* **LMCache / llm-d / KV offloading** persist or tier the **transformer KV
-  cache**; they do not cover SSM recurrent/conv state and ship no cross-engine
+* **LMCache / llm-d / KVSwap / KV offloading** persist or tier the **transformer
+  KV cache**; they do not cover SSM recurrent/conv state and ship no cross-engine
   equivalence contract.
 * **safetensors** is the inspiration for the container shape, but stores model
   *weights*, not heterogeneous *inference state* with role/boundary semantics.

@@ -25,6 +25,7 @@ from typing import Callable
 
 import numpy as np
 
+from . import io as hss_io
 from .reference import ModelConfig, ReferenceModel
 
 # Committed equivalence tolerance. This is bitwise: it is never widened.
@@ -135,12 +136,30 @@ def corrupt_recurrent_fold(state: dict, meta: dict) -> None:
 
 
 def corrupt_attn_drop_row(state: dict, meta: dict) -> None:
-    """Drop the most recent cached KV position from the attention layer."""
+    """Drop the most recent cached KV position (the last row of both ``k`` and
+    ``v``) from the first attention layer. The dropped row is load-bearing: if a
+    future config produced a single-row KV cache this corruption would be a silent
+    no-op, so we raise rather than let the adversarial negative pass vacuously."""
+    target: str | None = None
+    dropped = False
     for name in list(state):
-        if name.endswith(".attn_kv.k") or name.endswith(".attn_kv.v"):
-            arr = state[name]
-            if arr.shape[0] > 1:
-                state[name] = arr[:-1].copy()
+        if not (name.endswith(".attn_kv.k") or name.endswith(".attn_kv.v")):
+            continue
+        prefix = name.rsplit(".", 1)[0]  # e.g. "layers.1.attn_kv"
+        if target is None:
+            target = prefix
+        if prefix != target:
+            continue
+        arr = state[name]
+        if arr.shape[0] <= 1:
+            raise ValueError(
+                f"attn KV {name!r} has too few rows to drop one; "
+                "adversarial negative would be vacuous"
+            )
+        state[name] = arr[:-1].copy()
+        dropped = True
+    if not dropped:
+        raise ValueError("no attn_kv tensor found to corrupt")
 
 
 def run_negative(
@@ -167,8 +186,6 @@ def run_negative(
     corruption(state, meta)
 
     path = os.path.join(tmpdir, f"corrupt_{tag}.hss")
-    from . import io as hss_io
-
     hss_io.save(path, state, meta)
 
     remaining = total - checkpoint_at
