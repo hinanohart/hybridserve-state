@@ -1,0 +1,12 @@
+hybridserve-state
+Copyright 2026 hinanohart
+
+This product includes software developed at hinanohart.
+
+Licensed under the MIT License (see LICENSE).
+
+The `.hss` container is shaped after the safetensors format
+(https://github.com/huggingface/safetensors, Apache-2.0). The optional engine
+adapter targets the flash-linear-attention project
+(https://github.com/fla-org/flash-linear-attention, MIT). Neither is bundled;
+they are referenced for interoperability only.
