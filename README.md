@@ -1,7 +1,8 @@
 # hybridserve-state
 
-**Engine-agnostic on-disk interchange for hybrid SSM + Attention LLM inference
-state, with a machine-checked rehydration-equivalence contract.**
+**Engine-agnostic on-disk interchange for hybrid SSM + Attention LLM inference state, with a machine-checked rehydration-equivalence contract.**
+
+Think "safetensors for inference state."
 
 > Status: **v0.1.0a1 — pre-alpha.** The container format and the
 > rehydration-equivalence contract are real and tested on CPU; the surface is
@@ -23,25 +24,6 @@ interrupts a generation, serializes the state, rehydrates it in a *fresh
 process*, resumes, and checks that the continuation is **bitwise identical** to
 the run that was never interrupted — and an adversarial test that proves a
 *corrupted* rehydration is *rejected*, so the guarantee cannot be vacuous.
-
-Think "safetensors for inference state."
-
-## Architecture
-
-```mermaid
-flowchart TD
-    A[Running inference<br>recurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
-    B -->|hss.save| C[.hss file on disk<br>Rust core writer]
-    C -->|hss.load| D[fresh Python process<br>_resume_worker]
-    D -->|resume decode| E[continuation tokens + logits]
-    A -->|uninterrupted run| F[reference tokens + logits]
-    E -->|bitwise compare epsilon=0| G{EquivalenceResult}
-    F --> G
-    G -->|PASS| H[contract holds]
-    G -->|FAIL| I[contract violated]
-    C -->|corrupted state| J[adversarial negative test]
-    J -->|divergence detected| K[non_vacuity confirmed]
-```
 
 ## Why
 
@@ -96,6 +78,23 @@ hss inspect state.hss        # show structure
 hss verify  state.hss        # parse + check metadata invariants
 hss diff a.hss b.hss         # byte-level comparison
 hss selfcheck                # run the bitwise rehydration-equivalence self-check
+```
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[Running inference<br>recurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
+    B -->|hss.save| C[.hss file on disk<br>Rust core writer]
+    C -->|hss.load| D[fresh Python process<br>_resume_worker]
+    D -->|resume decode| E[continuation tokens + logits]
+    A -->|uninterrupted run| F[reference tokens + logits]
+    E -->|bitwise compare epsilon=0| G{EquivalenceResult}
+    F --> G
+    G -->|PASS| H[contract holds]
+    G -->|FAIL| I[contract violated]
+    C -->|corrupted state| J[adversarial negative test]
+    J -->|divergence detected| K[non_vacuity confirmed]
 ```
 
 ## How the equivalence contract works
