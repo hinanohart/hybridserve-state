@@ -30,9 +30,9 @@ Think "safetensors for inference state."
 
 ```mermaid
 flowchart TD
-    A[Running inference\nrecurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
-    B -->|hss.save| C[.hss file on disk\nRust core writer]
-    C -->|hss.load| D[fresh Python process\n_resume_worker]
+    A[Running inference<br>recurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
+    B -->|hss.save| C[.hss file on disk<br>Rust core writer]
+    C -->|hss.load| D[fresh Python process<br>_resume_worker]
     D -->|resume decode| E[continuation tokens + logits]
     A -->|uninterrupted run| F[reference tokens + logits]
     E -->|bitwise compare epsilon=0| G{EquivalenceResult}
