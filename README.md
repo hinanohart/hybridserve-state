@@ -143,7 +143,7 @@ does not read it, so it is not one of the exercised corruptions — see
 * This is **not** a serving engine and makes **no** performance/throughput
   claims.
 * `adapters/fla.py` maps the `flash-linear-attention` `Cache` *structure*
-  (`recurrent_state` / `conv_state` / `attn_state` / `offset` / `layer_idx`)
+  (`recurrent_state` / `conv_state` / `attn_state` / `ffn_state` / `offset`)
   to/from `.hss` and is unit-tested against that documented schema using
   synthetic Cache objects; **end-to-end resume on a real `fla` model is not part
   of this release.**
