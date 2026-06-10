@@ -8,13 +8,12 @@ state, with a machine-checked rehydration-equivalence contract.**
 > small and the API may change. Read the [CLAIM / NON-CLAIM](#claim--non-claim)
 > section before depending on this.
 
-Modern open LLMs are increasingly **hybrid**: they interleave
-attention layers (which carry a growing key/value cache) with
-state-space / linear-attention layers (which carry a fixed-size *recurrent*
-state plus a short causal-convolution buffer). Their *inference state* is
-therefore heterogeneous — part KV cache, part recurrent fold, part conv ring
-buffer — and today it lives only in a specific engine's memory, in that engine's
-private layout.
+Modern open LLMs are increasingly **hybrid**: they interleave attention layers
+(which carry a growing key/value cache) with state-space / linear-attention
+layers (which carry a fixed-size *recurrent* state plus a short causal-convolution
+buffer). Their *inference state* is therefore heterogeneous — part KV cache, part
+recurrent fold, part conv ring buffer — and today it lives only in a specific
+engine's memory, in that engine's private layout.
 
 `hybridserve-state` defines `.hss`: a small, safetensors-shaped container that
 writes that heterogeneous state to disk in an **engine-neutral** way, together
@@ -26,6 +25,23 @@ the run that was never interrupted — and an adversarial test that proves a
 *corrupted* rehydration is *rejected*, so the guarantee cannot be vacuous.
 
 Think "safetensors for inference state."
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[Running inference\nrecurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
+    B -->|hss.save| C[.hss file on disk\nRust core writer]
+    C -->|hss.load| D[fresh Python process\n_resume_worker]
+    D -->|resume decode| E[continuation tokens + logits]
+    A -->|uninterrupted run| F[reference tokens + logits]
+    E -->|bitwise compare epsilon=0| G{EquivalenceResult}
+    F --> G
+    G -->|PASS| H[contract holds]
+    G -->|FAIL| I[contract violated]
+    C -->|corrupted state| J[adversarial negative test]
+    J -->|divergence detected| K[non_vacuity confirmed]
+```
 
 ## Why
 
@@ -46,9 +62,9 @@ maturin develop --release      # builds the Rust core into the Python package
 
 Run the build from inside the activated environment (the same flow CI uses); if
 `maturin` is not found on `PATH`, invoke it as `python -m maturin develop
---release`. Requires a stable Rust toolchain and Python ≥ 3.10. NumPy is the only
-runtime dependency. PyTorch / `flash-linear-attention` are **optional** and only
-used by the (CI-skipped) real-engine adapters.
+--release`. Requires a stable Rust toolchain and Python ≥ 3.10. NumPy is the
+only runtime dependency. PyTorch / `flash-linear-attention` are **optional** and
+only used by the (CI-skipped) real-engine adapters.
 
 ## Quickstart
 
