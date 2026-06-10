@@ -1,0 +1,46 @@
+direction: down
+explanation: |md
+  ### hybridserve-state
+  **Engine-agnostic on-disk interchange for hybrid SSM + Attention LLM inference state — "safetensors for inference state."**
+| {near: top-center}
+
+inference: "① Running Inference\nrecurrent + conv + attn_kv" {style: {fill: "#6366f1"; font-color: "#ffffff"; stroke: "#4338ca"; bold: true; font-size: 18}}
+
+harness: "② verify harness" {style: {fill: "#0ea5e9"; font-color: "#ffffff"; stroke: "#0369a1"; bold: true; font-size: 18}}
+
+hss_file: "③ .hss file on disk\nRust core writer" {shape: cylinder; style: {fill: "#fdf2f8"; stroke: "#ec4899"; font-color: "#9d174e"; bold: true}}
+
+resume_zone: "Resume Path" {
+  style: {fill: "#f0fdf4"; stroke: "#10b981"; font-color: "#065f46"; bold: true; font-size: 16}
+  fresh_proc: "④ fresh Python process\n_resume_worker" {style: {fill: "#dcfce7"; font-color: "#065f46"}}
+  continuation: "⑤ continuation tokens\n+ logits" {style: {fill: "#dcfce7"; font-color: "#065f46"}}
+}
+
+reference: "⑤ reference tokens\n+ logits" {style: {fill: "#dcfce7"; font-color: "#065f46"}}
+
+equivalence: "⑥ EquivalenceResult\nbitwise compare ε=0" {style: {fill: "#0ea5e9"; font-color: "#ffffff"; stroke: "#0369a1"; bold: true; font-size: 18}}
+
+verdict_zone: "Contract Verdict" {
+  style: {fill: "#fffbeb"; stroke: "#f59e0b"; font-color: "#92400e"; bold: true; font-size: 16}
+  pass_v: "⑦ PASS\ncontract holds" {style: {fill: "#fef3c7"; font-color: "#92400e"}}
+  fail_v: "⑦ FAIL\ncontract violated" {style: {fill: "#fef3c7"; font-color: "#92400e"}}
+  adversarial: "adversarial negative test\nnon_vacuity confirmed" {style: {fill: "#fef3c7"; font-color: "#92400e"}}
+}
+
+inference -> harness: "① checkpoint at token k"
+harness -> hss_file: "② hss.save"
+hss_file -> resume_zone.fresh_proc: "③ hss.load"
+resume_zone.fresh_proc -> resume_zone.continuation: "④ resume decode"
+inference -> reference: "⑤ uninterrupted run"
+resume_zone.continuation -> equivalence: "⑥ compare"
+reference -> equivalence: "⑥ compare"
+equivalence -> verdict_zone.pass_v: "⑦ PASS"
+equivalence -> verdict_zone.fail_v: "⑦ FAIL"
+hss_file -> verdict_zone.adversarial: "corrupted state"
+
+legend: "Legend" {
+  near: bottom-center
+  style: {fill: "#f8fafc"; stroke: "#cbd5e1"; font-size: 13}
+  e: "● entry"; c: "● core"; p: "● processing"; b: "● external"; d: "● output"
+  e.style.font-color: "#4338ca"; c.style.font-color: "#0369a1"; p.style.font-color: "#10b981"; b.style.font-color: "#f59e0b"; d.style.font-color: "#ec4899"
+}

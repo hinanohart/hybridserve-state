@@ -82,20 +82,9 @@ hss selfcheck                # run the bitwise rehydration-equivalence self-chec
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    A[Running inference<br>recurrent + conv + attn_kv] -->|checkpoint_at token k| B[verify harness]
-    B -->|hss.save| C[.hss file on disk<br>Rust core writer]
-    C -->|hss.load| D[fresh Python process<br>_resume_worker]
-    D -->|resume decode| E[continuation tokens + logits]
-    A -->|uninterrupted run| F[reference tokens + logits]
-    E -->|bitwise compare epsilon=0| G{EquivalenceResult}
-    F --> G
-    G -->|PASS| H[contract holds]
-    G -->|FAIL| I[contract violated]
-    C -->|corrupted state| J[adversarial negative test]
-    J -->|divergence detected| K[non_vacuity confirmed]
-```
+<div align="center">
+  <img src="docs/architecture.png" alt="hybridserve-state architecture" width="840">
+</div>
 
 ## How the equivalence contract works
 
@@ -184,3 +173,4 @@ fuzz/       optional cargo-fuzz target (nightly; CI uses the in-test fuzz smoke)
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
